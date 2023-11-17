@@ -1,0 +1,45 @@
+# Please intall 
+"scripts": {
+    "clean": "rm -rf dist",
+    "assets": "cp package.json dist/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "startDev": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "build": "npm run clean && npm i && ./node_modules/.bin/tsc && npm run assets && cd dist && pm2 restart app.js"
+  },
+
+Dependences========
+
+"bcryptjs"
+"body-parser"
+"chalk": 
+"cloudinary": 
+"cors": 
+"dotenv": "
+"ejs": 
+"express": "
+"joi": "
+"jsonwebtoken": 
+"moment": 
+"morgan": 
+"multer": 
+"mysql2": 
+"sequelize": 
+"tsc-watch": 
+"uninstall": 
+"nodemailer": 
+
+
+typess 
+
+"@types/bcryptjs"
+"@types/cookie-parser"
+"@types/cors"
+"@types/express"
+"@types/jsonwebtoken"
+"@types/morgan"
+"@types/multer"
+"@types/node"
+"@types/nodemailer"
+"sequelize-cli"
+"typescript":

@@ -1,0 +1,53 @@
+{
+  "name": "shopifyimagegen",
+  "version": "1.0.0",
+  "description": "",
+  "main": "index.js",
+  "scripts": {
+    "clean": "rm -rf dist",
+    "assets": "cp package.json dist/",
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "startDev": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "build": "npm run clean && npm i && ./node_modules/.bin/tsc && npm run assets && cd dist && pm2 restart app.js"
+  },
+  "keywords": [],
+  "author": "",
+  "license": "ISC",
+  "dependencies": {
+    "@types/winston": "^2.4.4",
+    "bcryptjs": "^2.4.3",
+    "chalk": "^5.2.0",
+    "cloudinary": "^1.36.2",
+    "cookie-parser": "^1.4.6",
+    "cors": "^2.8.5",
+    "dotenv": "^16.0.3",
+    "ejs": "^3.1.9",
+    "express": "^4.18.2",
+    "express-winston": "^4.2.0",
+    "joi": "^17.9.2",
+    "jsonwebtoken": "^9.0.0",
+    "moment": "^2.29.4",
+    "morgan": "^1.10.0",
+    "multer": "^1.4.5-lts.1",
+    "mysql2": "^3.2.4",
+    "nodemailer": "^6.9.1",
+    "sequelize": "^6.31.0",
+    "sequelize-cli": "^6.6.0",
+    "tsc-watch": "^6.0.0",
+    "uninstall": "^0.0.0",
+    "winston": "^3.10.0"
+  },
+  "devDependencies": {
+    "@types/bcryptjs": "^2.4.2",
+    "@types/cookie-parser": "^1.4.3",
+    "@types/cors": "^2.8.13",
+    "@types/express": "^4.17.17",
+    "@types/jsonwebtoken": "^9.0.2",
+    "@types/morgan": "^1.9.4",
+    "@types/multer": "^1.4.7",
+    "@types/node": "^18.16.2",
+    "@types/nodemailer": "^6.4.7",
+    "typescript": "^5.0.4"
+  }
+}
