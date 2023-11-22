@@ -7,8 +7,8 @@
     "clean": "rm -rf dist",
     "assets": "cp package.json dist/",
     "test": "echo \"Error: no test specified\" && exit 1",
-    "start": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
-    "startDev": "./node_modules/.bin/tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "start": "npx tsc-watch --onSuccess \"node ./dist/app.js\"",
+    "startDev": "npx tsc-watch --onSuccess \"node ./dist/app.js\"",
     "build": "npm run clean && npm i && ./node_modules/.bin/tsc && npm run assets && cd dist && pm2 restart app.js"
   },
   "keywords": [],
