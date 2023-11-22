@@ -4,6 +4,7 @@ import Joi from "joi";
 import { ValidationError } from "sequelize";
 const { Op } = require("sequelize");
 import { paging, enumKeys } from "../helpers/helper";
+import { Loan } from "../models/loan";
 
 const cloudinary = require("cloudinary").v2;
 export class LoanTakerController {
@@ -78,6 +79,79 @@ export class LoanTakerController {
     }
   }
 
+  // fetch loan list by loan taker id
+  async loanList(req: express.Request, res: express.Response) {
+    const schema = Joi.object().keys({
+      id: Joi.number().required()
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error instanceof ValidationError) {
+      res.Error(error.details[0].message);
+      return;
+    }
+
+    let qp = req.query;
+    let perPage: any = Number(qp.perPage) > 0 ? Number(qp.perPage) : 10;
+    let pageNo: any = Number(qp.page) > 0 ? Number(qp.page) - 1 : 0;
+    let order: Array<any> = [];
+    if (req.query.orderBy && req.query.order) {
+      order.push([req.query.orderBy as string, req.query.order as string]);
+    }
+
+    const where: any = {};
+    where["loan_taker_id"] = {
+      [Op.eq]: req.body.id,
+    };
+
+    // if (qp.keyword) {
+    //   where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
+    // }
+
+
+    // if (qp.status && qp.status != "" && qp.status != null) {
+    //   where["status"] = {
+    //     [Op.eq]: qp.status,
+    //   };
+    // }
+
+    // if(qp.cnic && qp.cnic != "" && qp.cnic!= null) {
+    //    where["cnic"] = {
+    //     [Op.eq]: qp.cnic,
+    //    };
+    // }
+
+    // if (qp.phone_number && qp.phone_number != "" && qp.phone_number != null) {
+    //   where["phone_number"] = {
+    //     [Op.eq]: qp.phone_number,
+    //   };
+    // }
+
+    let pagination = {};
+
+    if (qp?.perPage && qp?.page) {
+      pagination = {
+        offset: perPage * pageNo,
+        limit: perPage,
+      };
+    }
+
+    const data = await Loan.findAndCountAll({
+      where,
+      order,
+      distinct: true,
+      ...pagination,
+    }).catch((e) => {
+      console.log(e);
+    });
+
+    if (qp.hasOwnProperty("page")) {
+      return res.Success("list", paging(data, pageNo, perPage));
+    } else {
+      return res.Success("list", data);
+    }
+  }
+  
   public async save(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
       name: Joi.string().required(),

@@ -48,6 +48,7 @@ export class AdminRoutes extends RoutesConfig {
     route.post("/update", controller.update);
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
+    route.post("/loans-list", controller.loanList);
     this.route.use("/loan-taker", route);
   }
 

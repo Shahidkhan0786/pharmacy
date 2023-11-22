@@ -9,6 +9,7 @@ import {
 import { sequelize } from "../config/connection";
 import { StatusEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
+import { Loan } from "./loan";
 export class LoanTaker extends Model<
   InferAttributes<LoanTaker>,
   InferCreationAttributes<LoanTaker>
@@ -68,3 +69,5 @@ LoanTaker.init(
     tableName: "loan_takers",
   }
 );
+
+// LoanTaker.belongsTo(Loan, { foreignKey: 'loan_taker_id' });
