@@ -6,6 +6,12 @@ export declare enum StatusEnum {
     Active = "Active",
     Inactive = "Inactive"
 }
+export declare enum PaymentSourceEnum {
+    CASH = "CASH",
+    JAZZCASH = "JAZZCASH",
+    EASYPASA = "EASYPASA",
+    BANK = "BANK"
+}
 export declare enum OrderStatusEnum {
     pending = "pending",
     complete = "complete",

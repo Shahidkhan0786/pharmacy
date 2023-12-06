@@ -10,6 +10,7 @@ import { Op } from "sequelize";
 import moment from "moment";
 import jwt, { JwtPayload } from "jsonwebtoken";
 import { Profile } from "../models/profile";
+
 export class AuthController extends Controller {
   private static instance: AuthController | null = null;
 

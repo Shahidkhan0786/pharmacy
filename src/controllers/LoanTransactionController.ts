@@ -6,16 +6,17 @@ import { ValidationError } from "sequelize";
 const { Op } = require("sequelize");
 import { paging, enumKeys } from "../helpers/helper";
 import { LoanTaker } from "../models/loanTaker";
-
+import { LoanTransaction } from "../models/loanTransaction";
+import { sequelize } from "../config/connection";
 const cloudinary = require("cloudinary").v2;
-export class LoanController {
-  private static instance: LoanController | null = null;
+export class LoanTransactionController {
+  private static instance: LoanTransactionController | null = null;
 
   private constructor() {}
 
-  static init(): LoanController {
+  static init(): LoanTransactionController {
     if (this.instance == null) {
-      this.instance = new LoanController();
+      this.instance = new LoanTransactionController();
     }
 
     return this.instance;
@@ -32,22 +33,35 @@ export class LoanController {
 
     const where: any = {};
 
-    if (qp.keyword) {
-      where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
-    }
-
-    if (qp.status && qp.status != "" && qp.status != null) {
-      where["status"] = {
-        [Op.eq]: qp.status,
+    if (
+      qp.transaction_amount &&
+      qp.transaction_amount != "" &&
+      qp.transaction_amount != null
+    ) {
+      where["transaction_amount"] = {
+        [Op.eq]: qp.transaction_amount,
       };
     }
 
-    if (qp.loan_type && qp.loan_type != "" && qp.loan_type != null) {
-      where["loan_type"] = {
-        [Op.eq]: qp.loan_type,
+    if (
+      qp.payment_source &&
+      qp.payment_source != "" &&
+      qp.payment_source != null
+    ) {
+      where["payment_source"] = {
+        [Op.eq]: qp.payment_source,
       };
     }
 
+    if (
+      qp.transaction_date &&
+      qp.transaction_date != "" &&
+      qp.transaction_date != null
+    ) {
+      where["transaction_date"] = {
+        [Op.eq]: qp.transaction_date,
+      };
+    }
     if (qp.date && qp.date != "" && qp.date != null) {
       where["date"] = {
         [Op.eq]: qp.date,
@@ -63,7 +77,7 @@ export class LoanController {
       };
     }
 
-    const data = await Loan.findAndCountAll({
+    const data = await LoanTransaction.findAndCountAll({
       where,
       order,
       distinct: true,
@@ -82,14 +96,10 @@ export class LoanController {
   public async save(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
       loan_taker_id: Joi.number().required(),
-      loan_type: Joi.string().required().valid("cash", "items"),
-      amount: Joi.number().required().integer().min(1),
-      bill_no: Joi.number().optional().integer(),
       description: Joi.string().optional(),
-      return_date: Joi.optional(),
-      installment_count: Joi.optional(),
-      installment_amount: Joi.optional(),
-      date: Joi.string().required(),
+      transaction_date: Joi.optional(),
+      transaction_amount: Joi.required(),
+      payment_source: Joi.required(),
       status: Joi.required(),
     });
 
@@ -100,39 +110,35 @@ export class LoanController {
 
     const catData = {
       loan_taker_id: req.body.loan_taker_id,
-      loan_type: req.body.loan_type,
-      amount: req.body.amount,
       description: req.body.description ?? null,
-      installment_amount: req.body.installment_amount ?? 0,
-      installment_count: req.body.installment_count ?? 0,
-      return_date: req.body.return_date ?? null,
-      bill_no: req.body.bill_no ?? null, // Make bill_no optional using conditional assignment
-      date: req.body.date,
+      transaction_amount: req.body.transaction_amount ?? 0,
+      transaction_date: req.body.transaction_date ?? "",
+      payment_source: req.body.payment_source ?? "",
       status: req.body.status,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     const loanTakerId = Number(req.body.loan_taker_id);
-    const additionalAmount = req.body.amount;
+    const transactionAmount = req.body.transaction_amount;
+    const transaction = await sequelize.transaction();
     try {
-      const instance = await Loan.create(catData);
+      const instance = await LoanTransaction.create(catData);
       const loanTaker = await LoanTaker.findOne({
         where: { id: loanTakerId },
       });
 
       if (loanTaker) {
-        let currentLoanAmount = loanTaker.loan_amount;
+        let paidLoanAmount = loanTaker.paid_amount;
         let remainingLoanAmount = loanTaker.remaining_amount;
-
-        currentLoanAmount += additionalAmount;
+        paidLoanAmount = Number(paidLoanAmount) + Number(transactionAmount);
 
         // Calculate the remaining loan amount after the update
-        remainingLoanAmount = remainingLoanAmount + additionalAmount;
+        remainingLoanAmount = remainingLoanAmount - transactionAmount;
 
         // Update the loan amount in the database
         await LoanTaker.update(
           {
-            loan_amount: currentLoanAmount,
+            paid_amount: paidLoanAmount,
             remaining_amount: remainingLoanAmount,
           },
           { where: { id: loanTakerId } }
@@ -140,10 +146,11 @@ export class LoanController {
       } else {
         return res.Error("Pass Correct Loan Taker id");
       }
-
+      await transaction.commit();
       return res.Success("Added Successfully", instance);
     } catch (e: any) {
-      console.log("Error", e);
+      //   console.log("Error", e);
+      await transaction.rollback();
       return res.Error("Error in adding record");
       //   (global as any).log.error(e);
     }
@@ -153,14 +160,11 @@ export class LoanController {
     const schema = Joi.object().keys({
       id: Joi.number().required(),
       loan_taker_id: Joi.number().required(),
-      loan_type: Joi.string().optional().valid("cash", "items"),
-      amount: Joi.number().optional().integer().min(1),
-      bill_no: Joi.number().optional().integer(),
       description: Joi.string().optional(),
+      transaction_date: Joi.optional(),
+      transaction_amount: Joi.optional(),
+      payment_source: Joi.optional(),
       status: Joi.optional(),
-      return_date: Joi.optional(),
-      installment_count: Joi.optional(),
-      installment_amount: Joi.optional(),
     });
 
     const { error, value } = schema.validate(req.body);
@@ -178,24 +182,20 @@ export class LoanController {
 
     const LoanData = {
       loan_taker_id: req.body.loan_taker_id,
-      loan_type: req.body.loan_type,
-      amount: req.body.amount,
-      description: req.body.description ?? null,
-      bill_no: req.body.bill_no ?? null, // Make bill_no optional using conditional assignment
+      transaction_amount: req.body.transaction_amount ?? "",
+      transaction_date: req.body.transaction_date ?? "",
+      payment_source: req.body.payment_source ?? "",
       status: req.body.status,
       updatedAt: new Date(),
-      return_date: req.body.return_date ?? null,
-      installment_count: req.body.installment_count ?? 0,
-      installment_amount: req.body.installment_amount ?? 0,
     };
     try {
-      const instance = await Loan.update(LoanData, {
+      const instance = await LoanTransaction.update(LoanData, {
         where: { id: req.body.id },
       });
       if (!instance) {
         return res.Error("Error in updating record please fill correct data");
       }
-      const res_data = await Loan.findByPk(req.body.id);
+      const res_data = await LoanTransaction.findByPk(req.body.id);
       return res.Success("updated successfully", res_data);
     } catch (e: any) {
       return res.Error("Error in updating record please fill correct data");
@@ -215,7 +215,7 @@ export class LoanController {
       return;
     }
 
-    const result = await Loan.findOne({
+    const result = await LoanTransaction.findOne({
       where: { id: Number(req.body.id) },
     });
     // console.log(review);
@@ -242,7 +242,7 @@ export class LoanController {
       return;
     }
 
-    const data: any = await Loan.update(
+    const data: any = await LoanTransaction.update(
       { status: req.body.status },
       { where: { id: req.body.id } }
     );
@@ -256,7 +256,7 @@ export class LoanController {
   // del user
   async del(req: express.Request, res: express.Response) {
     try {
-      let data = await Loan.destroy({
+      let data = await LoanTransaction.destroy({
         where: {
           id: Number(req.body.id),
         },

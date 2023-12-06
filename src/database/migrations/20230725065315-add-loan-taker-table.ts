@@ -26,6 +26,21 @@ module.exports = {
       description: {
         type: DataTypes.STRING(100),
       },
+      loan_amount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+      },
+      paid_amount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true,
+      },
+      remaining_amount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true,
+      },
       status: {
         type: DataTypes.ENUM(...enumKeys(StatusEnum)),
         defaultValue: StatusEnum.Active,

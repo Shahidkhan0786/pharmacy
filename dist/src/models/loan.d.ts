@@ -8,6 +8,9 @@ export declare class Loan extends Model<InferAttributes<Loan>, InferCreationAttr
     amount: number;
     bill_no: number;
     date?: Date;
+    return_date?: Date;
+    installment_amount?: number;
+    installment_count?: number;
     status: StatusEnum;
     createdAt?: Date;
     updatedAt?: Date;

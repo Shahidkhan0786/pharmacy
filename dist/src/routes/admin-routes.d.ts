@@ -7,4 +7,5 @@ export declare class AdminRoutes extends RoutesConfig {
     distributorRoutes(): void;
     loanTakerRoutes(): void;
     loanRoutes(): void;
+    loanTransactionRoutes(): void;
 }

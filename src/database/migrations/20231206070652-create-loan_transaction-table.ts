@@ -1,10 +1,10 @@
 import { QueryInterface, DataTypes, QueryTypes } from "sequelize";
 import Sequelize from "sequelize";
-import { StatusEnum } from "../../constants/enum";
+import { StatusEnum, PaymentSourceEnum } from "../../constants/enum";
 import { enumKeys } from "../../helpers/helper";
 module.exports = {
   up: (queryInterface: QueryInterface) => {
-    return queryInterface.createTable("loans", {
+    return queryInterface.createTable("loan_transactions", {
       id: {
         type: DataTypes.BIGINT.UNSIGNED,
         primaryKey: true,
@@ -14,39 +14,26 @@ module.exports = {
         type: DataTypes.BIGINT.UNSIGNED,
         allowNull: false,
       },
-      date: {
+      // loan_id: {
+      //     type: DataTypes.BIGINT.UNSIGNED,
+      //     allowNull: false,
+      // },
+      transaction_date: {
         type: DataTypes.DATEONLY,
         allowNull: false,
-      },
-      return_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: true,
-      },
-      loan_type: {
-        type: DataTypes.ENUM("cash", "items"),
-        allowNull: false,
-        defaultValue: "cash",
-      },
-      amount: {
-        type: DataTypes.INTEGER,
-        allowNull: false,
-      },
-      installment_amount: {
-        type: DataTypes.INTEGER,
-        defaultValue:0,
-        allowNull: true,
-      },
-      installment_count: {
-        type: DataTypes.INTEGER,
-        defaultValue:0,
-        allowNull: true,
-      },
-      bill_no: {
-        type: DataTypes.INTEGER,
-        allowNull:true,
       },
       description: {
         type: DataTypes.STRING(100),
+      },
+      transaction_amount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: false,
+      },
+
+      payment_source: {
+        type: DataTypes.ENUM(...enumKeys(PaymentSourceEnum)),
+        defaultValue: PaymentSourceEnum.CASH,
       },
       status: {
         type: DataTypes.ENUM(...enumKeys(StatusEnum)),
@@ -67,6 +54,6 @@ module.exports = {
     });
   },
   down: (queryInterface: QueryInterface) => {
-    return queryInterface.dropTable("loans");
+    return queryInterface.dropTable("loan_transactions");
   },
 };

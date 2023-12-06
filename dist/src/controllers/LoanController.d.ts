@@ -6,6 +6,7 @@ export declare class LoanController {
     list(req: express.Request, res: express.Response): Promise<void>;
     save(req: express.Request, res: express.Response): Promise<void>;
     update(req: express.Request, res: express.Response): Promise<void>;
+    detail(req: express.Request, res: express.Response): Promise<void>;
     updateStatus(req: express.Request, res: express.Response): Promise<void>;
     del(req: express.Request, res: express.Response): Promise<void>;
 }

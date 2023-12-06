@@ -1,9 +1,13 @@
 import express, { RequestHandler, Router } from "express";
 import { RoutesConfig } from "./routes.config";
 import { AdminAuthMiddleware } from "../middlewares/admin-auth-middleware";
-import { DistributorController } from "../controllers/DistributorController";
-import { LoanTakerController } from "../controllers/LoanTakerController";
-import { LoanController} from "../controllers/LoanController";
+import {
+  LoanController,
+  DistributorController,
+  LoanTakerController,
+  LoanTransactionController,
+} from "../controllers/controller";
+
 // import {uploadFiles} from "../helpers/helper"
 
 export class AdminRoutes extends RoutesConfig {
@@ -25,6 +29,7 @@ export class AdminRoutes extends RoutesConfig {
     this.distributorRoutes();
     this.loanTakerRoutes();
     this.loanRoutes();
+    this.loanTransactionRoutes();
     return this.app;
   }
 
@@ -46,9 +51,12 @@ export class AdminRoutes extends RoutesConfig {
     route.get("/list", controller.list);
     route.post("/add", controller.save);
     route.post("/update", controller.update);
+    route.post("/detail", controller.detail);
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
-    route.post("/loans-list", controller.loanList);
+    route.post("/loan/loans-list", controller.loanList);
+    route.post("/transaction/transactions-list", controller.transactionList);
+    route.post("/loan/loan-detail", controller.loanDetail);
     this.route.use("/loan-taker", route);
   }
 
@@ -56,6 +64,7 @@ export class AdminRoutes extends RoutesConfig {
     const route = express.Router();
     const controller = LoanController.init();
     route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
     route.post("/add", controller.save);
     route.post("/update", controller.update);
     route.post("/update-status", controller.updateStatus);
@@ -63,4 +72,15 @@ export class AdminRoutes extends RoutesConfig {
     this.route.use("/loan", route);
   }
 
+  loanTransactionRoutes() {
+    const route = express.Router();
+    const controller = LoanTransactionController.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/loan-transaction", route);
+  }
 }

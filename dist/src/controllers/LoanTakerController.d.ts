@@ -5,8 +5,11 @@ export declare class LoanTakerController {
     static init(): LoanTakerController;
     list(req: express.Request, res: express.Response): Promise<void>;
     loanList(req: express.Request, res: express.Response): Promise<void>;
+    transactionList(req: express.Request, res: express.Response): Promise<void>;
     save(req: express.Request, res: express.Response): Promise<void>;
     update(req: express.Request, res: express.Response): Promise<void>;
     updateStatus(req: express.Request, res: express.Response): Promise<void>;
+    detail(req: express.Request, res: express.Response): Promise<void>;
+    loanDetail(req: express.Request, res: express.Response): Promise<void>;
     del(req: express.Request, res: express.Response): Promise<void>;
 }

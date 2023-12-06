@@ -5,6 +5,7 @@ import { ValidationError } from "sequelize";
 const { Op } = require("sequelize");
 import { paging, enumKeys } from "../helpers/helper";
 import { Loan } from "../models/loan";
+import { LoanTransaction } from "../models/loanTransaction";
 
 const cloudinary = require("cloudinary").v2;
 export class LoanTakerController {
@@ -35,17 +36,16 @@ export class LoanTakerController {
       where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
     }
 
-
     if (qp.status && qp.status != "" && qp.status != null) {
       where["status"] = {
         [Op.eq]: qp.status,
       };
     }
 
-    if(qp.cnic && qp.cnic != "" && qp.cnic!= null) {
-       where["cnic"] = {
+    if (qp.cnic && qp.cnic != "" && qp.cnic != null) {
+      where["cnic"] = {
         [Op.eq]: qp.cnic,
-       };
+      };
     }
 
     if (qp.phone_number && qp.phone_number != "" && qp.phone_number != null) {
@@ -82,7 +82,7 @@ export class LoanTakerController {
   // fetch loan list by loan taker id
   async loanList(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
-      id: Joi.number().required()
+      id: Joi.number().required(),
     });
 
     const { error, value } = schema.validate(req.body);
@@ -107,7 +107,6 @@ export class LoanTakerController {
     // if (qp.keyword) {
     //   where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
     // }
-
 
     // if (qp.status && qp.status != "" && qp.status != null) {
     //   where["status"] = {
@@ -151,7 +150,91 @@ export class LoanTakerController {
       return res.Success("list", data);
     }
   }
-  
+
+  // fetch loan list by loan taker id
+  async transactionList(req: express.Request, res: express.Response) {
+    const schema = Joi.object().keys({
+      id: Joi.number().required(),
+    });
+
+    const { error, value } = schema.validate(req.body);
+    if (error instanceof ValidationError) {
+      res.Error(error.details[0].message);
+      return;
+    }
+
+    let qp = req.query;
+    let perPage: any = Number(qp.perPage) > 0 ? Number(qp.perPage) : 10;
+    let pageNo: any = Number(qp.page) > 0 ? Number(qp.page) - 1 : 0;
+    let order: Array<any> = [];
+    if (req.query.orderBy && req.query.order) {
+      order.push([req.query.orderBy as string, req.query.order as string]);
+    }
+
+    const where: any = {};
+    where["loan_taker_id"] = {
+      [Op.eq]: req.body.id,
+    };
+
+    // if (qp.keyword) {
+    //   where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
+    // }
+
+    if (
+      qp.transaction_amount &&
+      qp.transaction_amount != "" &&
+      qp.transaction_amount != null
+    ) {
+      where["transaction_amount"] = {
+        [Op.eq]: qp.transaction_amount,
+      };
+    }
+
+    if (
+      qp.payment_source &&
+      qp.payment_source != "" &&
+      qp.payment_source != null
+    ) {
+      where["payment_source"] = {
+        [Op.eq]: qp.payment_source,
+      };
+    }
+
+    if (
+      qp.transaction_date &&
+      qp.transaction_date != "" &&
+      qp.transaction_date != null
+    ) {
+      where["transaction_date"] = {
+        [Op.eq]: qp.transaction_date,
+      };
+    }
+
+    let pagination = {};
+
+    if (qp?.perPage && qp?.page) {
+      pagination = {
+        offset: perPage * pageNo,
+        limit: perPage,
+      };
+    }
+
+    const data = await LoanTransaction.findAndCountAll({
+      where,
+      order,
+      distinct: true,
+      ...pagination,
+    }).catch((e) => {
+      console.log(e);
+    });
+
+    if (qp.hasOwnProperty("page")) {
+      return res.Success("list", paging(data, pageNo, perPage));
+    } else {
+      return res.Success("list", data);
+    }
+  }
+
   public async save(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
       name: Joi.string().required(),
@@ -184,7 +267,7 @@ export class LoanTakerController {
     } catch (e: any) {
       //   await transaction.rollback();
       console.log("Error", e);
-      return res.Error("Error in adding record",e);
+      return res.Error("Error in adding record", e);
       (global as any).log.error(e);
       res.Error("error in creating LoanTaker");
     }
@@ -262,6 +345,55 @@ export class LoanTakerController {
     }
     return res.Success("status updated successfully");
   }
+
+  public async detail(req: express.Request, res: express.Response) {
+    const schema = Joi.object().keys({
+      id: Joi.number().required(),
+    });
+    const { error, value } = schema.validate(req.body);
+
+    if (error instanceof ValidationError) {
+      res.Error(error.details[0].message);
+      return;
+    }
+
+    const result = await LoanTaker.findOne({
+      where: { id: Number(req.body.id) },
+    });
+    // console.log(review);
+
+    if (result === null) {
+      res.Error("data not found");
+      return;
+    }
+
+    res.Success("Detail", result);
+  }
+
+  public async loanDetail(req: express.Request, res: express.Response) {
+    const schema = Joi.object().keys({
+      id: Joi.number().required(),
+    });
+    const { error, value } = schema.validate(req.body);
+
+    if (error instanceof ValidationError) {
+      res.Error(error.details[0].message);
+      return;
+    }
+
+    const result = await Loan.findOne({
+      where: { id: Number(req.body.id) },
+    });
+    // console.log(review);
+
+    if (result === null) {
+      res.Error("data not found");
+      return;
+    }
+
+    res.Success("Loan Detail", result);
+  }
+
   // del user
   async del(req: express.Request, res: express.Response) {
     try {

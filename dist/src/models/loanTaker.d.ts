@@ -6,6 +6,9 @@ export declare class LoanTaker extends Model<InferAttributes<LoanTaker>, InferCr
     phone_number: string;
     cnic: string;
     description: string;
+    loan_amount?: number;
+    remaining_amount?: number;
+    paid_amount?: number;
     status: StatusEnum;
     createdAt?: Date;
     updatedAt?: Date;

@@ -19,6 +19,9 @@ export class LoanTaker extends Model<
   phone_number: string;
   cnic: string;
   description: string;
+  loan_amount?: number;
+  remaining_amount?: number;
+  paid_amount?: number;
   status: StatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
@@ -45,6 +48,21 @@ LoanTaker.init(
     cnic: {
       type: DataTypes.STRING(50),
       allowNull: false,
+    },
+    loan_amount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: false,
+    },
+    remaining_amount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: true,
+    },
+    paid_amount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: true,
     },
     status: {
       type: DataTypes.ENUM(...enumKeys(StatusEnum)),
