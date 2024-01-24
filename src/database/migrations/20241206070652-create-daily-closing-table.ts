@@ -30,13 +30,32 @@ module.exports = {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      total_loan: {
+      loan: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      total_loan_return: {
+      loan_return: {
         type: DataTypes.INTEGER,
         allowNull: false,
+      },
+      debited_amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      credited_amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      grand_total: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      description: {
+        type: DataTypes.STRING(100),
+      },
+      status: {
+        type: DataTypes.ENUM(...enumKeys(StatusEnum)),
+        defaultValue: StatusEnum.Active,
       },
       // Add other fields as needed
       createdAt: {

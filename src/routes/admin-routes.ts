@@ -2,6 +2,7 @@ import express, { RequestHandler, Router } from "express";
 import { RoutesConfig } from "./routes.config";
 import { AdminAuthMiddleware } from "../middlewares/admin-auth-middleware";
 import {
+  DailyClosing,
   LoanController,
   DistributorController,
   LoanTakerController,
@@ -31,6 +32,7 @@ export class AdminRoutes extends RoutesConfig {
     // this.categoryRoutes()
     this.distributorRoutes();
     this.loanTakerRoutes();
+    this.dailyClosingRoutes();
     this.loanRoutes();
     this.loanTransactionRoutes();
     this.distributorDebitRoutes();
@@ -111,5 +113,17 @@ export class AdminRoutes extends RoutesConfig {
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
     this.route.use("/distributor-credit", route);
+  }
+
+  dailyClosingRoutes() {
+    const route = express.Router();
+    const controller = DailyClosing.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/daily-closing", route);
   }
 }

@@ -4,6 +4,7 @@ import { LoanTransactionController } from "./LoanTransactionController";
 import { LoanController } from "./LoanController";
 import { DistributorDebitController } from "./DistributorDebitController";
 import { DistributorCreditController } from "./DistributorCreditController";
+import { DailyClosing } from "./DailyClosing";
 export declare class Controller {
 }
-export { LoanController, DistributorController, LoanTakerController, LoanTransactionController, DistributorDebitController, DistributorCreditController, };
+export { DailyClosing, LoanController, DistributorController, LoanTakerController, LoanTransactionController, DistributorDebitController, DistributorCreditController, };
