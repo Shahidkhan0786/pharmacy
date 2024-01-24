@@ -6,6 +6,9 @@ import {
   DistributorController,
   LoanTakerController,
   LoanTransactionController,
+  // DistributorLoanController,
+  DistributorDebitController,
+  DistributorCreditController,
 } from "../controllers/controller";
 
 // import {uploadFiles} from "../helpers/helper"
@@ -30,6 +33,8 @@ export class AdminRoutes extends RoutesConfig {
     this.loanTakerRoutes();
     this.loanRoutes();
     this.loanTransactionRoutes();
+    this.distributorDebitRoutes();
+    this.distributorCreditRoutes();
     return this.app;
   }
 
@@ -55,7 +60,7 @@ export class AdminRoutes extends RoutesConfig {
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
     route.post("/loan/loans-list", controller.loanList);
-    route.post("/transaction/transactions-list", controller.transactionList);
+    route.get("/transaction/transactions-list", controller.transactionList);
     route.post("/loan/loan-detail", controller.loanDetail);
     this.route.use("/loan-taker", route);
   }
@@ -82,5 +87,29 @@ export class AdminRoutes extends RoutesConfig {
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
     this.route.use("/loan-transaction", route);
+  }
+
+  distributorDebitRoutes() {
+    const route = express.Router();
+    const controller = DistributorDebitController.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/distributor-debit", route);
+  }
+
+  distributorCreditRoutes() {
+    const route = express.Router();
+    const controller = DistributorCreditController.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/distributor-credit", route);
   }
 }

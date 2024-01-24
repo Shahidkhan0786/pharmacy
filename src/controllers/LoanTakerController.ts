@@ -153,16 +153,6 @@ export class LoanTakerController {
 
   // fetch loan list by loan taker id
   async transactionList(req: express.Request, res: express.Response) {
-    const schema = Joi.object().keys({
-      id: Joi.number().required(),
-    });
-
-    const { error, value } = schema.validate(req.body);
-    if (error instanceof ValidationError) {
-      res.Error(error.details[0].message);
-      return;
-    }
-
     let qp = req.query;
     let perPage: any = Number(qp.perPage) > 0 ? Number(qp.perPage) : 10;
     let pageNo: any = Number(qp.page) > 0 ? Number(qp.page) - 1 : 0;
@@ -173,7 +163,7 @@ export class LoanTakerController {
 
     const where: any = {};
     where["loan_taker_id"] = {
-      [Op.eq]: req.body.id,
+      [Op.eq]: qp.id,
     };
 
     // if (qp.keyword) {
@@ -191,12 +181,12 @@ export class LoanTakerController {
     }
 
     if (
-      qp.payment_source &&
-      qp.payment_source != "" &&
-      qp.payment_source != null
+      qp.paymentsource &&
+      qp.paymentsource != "" &&
+      qp.paymentsource != null
     ) {
       where["payment_source"] = {
-        [Op.eq]: qp.payment_source,
+        [Op.eq]: qp.paymentsource,
       };
     }
 

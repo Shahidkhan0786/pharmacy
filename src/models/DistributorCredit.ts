@@ -7,62 +7,55 @@ import {
   Sequelize,
 } from "sequelize";
 import { sequelize } from "../config/connection";
-import { StatusEnum } from "../constants/enum";
+import { StatusEnum, PaymentSourceEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
-export class Distributor extends Model<
-  InferAttributes<Distributor>,
-  InferCreationAttributes<Distributor>
+import { Loan } from "./loan";
+export class DistributorCredit extends Model<
+  InferAttributes<DistributorCredit>,
+  InferCreationAttributes<DistributorCredit>
 > {
   id: number | null;
-  name: string;
-  companyName: string;
-  phoneNo: string;
+  distributor_id: number;
+  //   loan_id: number;
   description: string;
-  loan_amount?: number;
-  remaining_amount?: number;
-  paid_amount?: number;
+  credit_date: Date;
+  credit_amount: number;
+  payment_source: PaymentSourceEnum;
   status: StatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-Distributor.init(
+DistributorCredit.init(
   {
     id: {
       type: DataTypes.BIGINT.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: DataTypes.STRING(50),
+    distributor_id: {
+      type: DataTypes.BIGINT.UNSIGNED,
+      allowNull: false,
+    },
+
+    credit_date: {
+      type: DataTypes.DATEONLY,
       allowNull: false,
     },
     description: {
       type: DataTypes.STRING(100),
     },
-    phoneNo: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-    },
-    companyName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    loan_amount: {
+    credit_amount: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false,
     },
-    remaining_amount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
+
+    payment_source: {
+      type: DataTypes.ENUM(...enumKeys(PaymentSourceEnum)),
+      defaultValue: PaymentSourceEnum.CASH,
     },
-    paid_amount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
-    },
+
     status: {
       type: DataTypes.ENUM(...enumKeys(StatusEnum)),
       defaultValue: StatusEnum.Active,
@@ -83,6 +76,8 @@ Distributor.init(
   {
     sequelize,
     timestamps: false,
-    tableName: "distributors",
+    tableName: "distributor-credits",
   }
 );
+
+// LoanTaker.belongsTo(Loan, { foreignKey: 'loan_taker_id' });

@@ -7,61 +7,65 @@ import {
   Sequelize,
 } from "sequelize";
 import { sequelize } from "../config/connection";
-import { StatusEnum } from "../constants/enum";
+import { StatusEnum, PaymentSourceEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
-export class Distributor extends Model<
-  InferAttributes<Distributor>,
-  InferCreationAttributes<Distributor>
+export class DistributorDebit extends Model<
+  InferAttributes<DistributorDebit>,
+  InferCreationAttributes<DistributorDebit>
 > {
   id: number | null;
-  name: string;
-  companyName: string;
-  phoneNo: string;
+  distributor_id: number;
   description: string;
-  loan_amount?: number;
-  remaining_amount?: number;
-  paid_amount?: number;
+  amount: number;
+  bill_no: number;
+  date?: Date;
+  installment_amount?: number;
+  installment_count?: number;
+  payment_source: PaymentSourceEnum;
   status: StatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-Distributor.init(
+DistributorDebit.init(
   {
     id: {
       type: DataTypes.BIGINT.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    name: {
-      type: DataTypes.STRING(50),
+    distributor_id: {
+      type: DataTypes.BIGINT.UNSIGNED,
       allowNull: false,
+    },
+    date: {
+      type: DataTypes.DATEONLY,
+      allowNull: false,
+    },
+    amount: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    installment_amount: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: true,
+    },
+    installment_count: {
+      type: DataTypes.INTEGER,
+      defaultValue: 0,
+      allowNull: true,
+    },
+    bill_no: {
+      type: DataTypes.INTEGER,
+      allowNull: true,
     },
     description: {
       type: DataTypes.STRING(100),
     },
-    phoneNo: {
-      type: DataTypes.STRING(50),
-      allowNull: true,
-    },
-    companyName: {
-      type: DataTypes.STRING(50),
-      allowNull: false,
-    },
-    loan_amount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: false,
-    },
-    remaining_amount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
-    },
-    paid_amount: {
-      type: DataTypes.INTEGER,
-      defaultValue: 0,
-      allowNull: true,
+    payment_source: {
+      type: DataTypes.ENUM(...enumKeys(PaymentSourceEnum)),
+      defaultValue: PaymentSourceEnum.CASH,
     },
     status: {
       type: DataTypes.ENUM(...enumKeys(StatusEnum)),
@@ -83,6 +87,6 @@ Distributor.init(
   {
     sequelize,
     timestamps: false,
-    tableName: "distributors",
+    tableName: "distributor-debits",
   }
 );

@@ -1,45 +1,52 @@
 import { QueryInterface, DataTypes, QueryTypes } from "sequelize";
-import { enumKeys } from "../../helpers/helper";
-import { StatusEnum } from "../../constants/enum";
 import Sequelize from "sequelize";
-
+import { StatusEnum } from "../../constants/enum";
+import { enumKeys } from "../../helpers/helper";
 module.exports = {
   up: (queryInterface: QueryInterface) => {
-    return queryInterface.createTable("distributors", {
+    return queryInterface.createTable("distributor_loans", {
       id: {
         type: DataTypes.BIGINT.UNSIGNED,
         primaryKey: true,
         autoIncrement: true,
       },
-      name: {
-        type: DataTypes.STRING(50),
+      loan_taker_id: {
+        type: DataTypes.BIGINT.UNSIGNED,
         allowNull: false,
+      },
+      date: {
+        type: DataTypes.DATEONLY,
+        allowNull: false,
+      },
+      return_date: {
+        type: DataTypes.DATEONLY,
+        allowNull: true,
+      },
+      loan_type: {
+        type: DataTypes.ENUM("cash", "items"),
+        allowNull: false,
+        defaultValue: "cash",
+      },
+      amount: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      installment_amount: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true,
+      },
+      installment_count: {
+        type: DataTypes.INTEGER,
+        defaultValue: 0,
+        allowNull: true,
+      },
+      bill_no: {
+        type: DataTypes.INTEGER,
+        allowNull: true,
       },
       description: {
         type: DataTypes.STRING(100),
-      },
-      phoneNo: {
-        type: DataTypes.STRING(50),
-        allowNull: true,
-      },
-      companyName: {
-        type: DataTypes.STRING(50),
-        allowNull: false,
-      },
-      loan_amount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: false,
-      },
-      remaining_amount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: true,
-      },
-      paid_amount: {
-        type: DataTypes.INTEGER,
-        defaultValue: 0,
-        allowNull: true,
       },
       status: {
         type: DataTypes.ENUM(...enumKeys(StatusEnum)),
@@ -60,6 +67,6 @@ module.exports = {
     });
   },
   down: (queryInterface: QueryInterface) => {
-    return queryInterface.dropTable("distributors");
+    return queryInterface.dropTable("distributor_loans");
   },
 };
