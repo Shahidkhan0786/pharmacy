@@ -10,69 +10,99 @@ import { sequelize } from "../config/connection";
 import { StatusEnum, PaymentSourceEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
 import { Loan } from "./loan";
-export class DailyClosing extends Model<
-  InferAttributes<DailyClosing>,
-  InferCreationAttributes<DailyClosing>
+export class DailyLedger extends Model<
+  InferAttributes<DailyLedger>,
+  InferCreationAttributes<DailyLedger>
 > {
   id: number | null;
-  loan_id: number;
-  closing_date: Date;
-  total_sales: number;
-  previous_day_closing_sale: number;
-  loan: number;
-  loan_return: number;
-  debited_amount: number;
-  credited_amount: number;
+  //   distributor_id: number;
+  ledger_date: Date;
+  rs_ten: number;
+  rs_twenty: number;
+  rs_fifty: number;
+  rs_hundred: number;
+  rs_5hundred: number;
+  rs_thousand: number;
+  rs_5thousand: number;
+  coins: number;
+  rs_total: number;
+  jazz_cash: number;
+  easy_pasa: number;
+  bank: number;
+  accounts_total: number;
   grand_total: number;
-  //   loan_id: number;
   description: string;
-  status: StatusEnum;
+  // status: StatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
 }
 
-DailyClosing.init(
+DailyLedger.init(
   {
     id: {
       type: DataTypes.BIGINT.UNSIGNED,
       primaryKey: true,
       autoIncrement: true,
     },
-    loan_id: {
-      type: DataTypes.BIGINT.UNSIGNED,
-      autoIncrement: false,
-    },
-    closing_date: {
+    ledger_date: {
       type: DataTypes.DATEONLY,
       allowNull: false,
     },
 
-    total_sales: {
+    rs_ten: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
     description: {
       type: DataTypes.STRING(100),
     },
-    previous_day_closing_sale: {
+    rs_twenty: {
       type: DataTypes.INTEGER,
       defaultValue: 0,
       allowNull: false,
     },
-    loan: {
+    rs_fifty: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
 
-    loan_return: {
+    rs_hundred: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    debited_amount: {
+    rs_5hundred: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    credited_amount: {
+    rs_thousand: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    rs_5thousand: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    coins: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    rs_total: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    jazz_cash: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    easy_pasa: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    bank: {
+      type: DataTypes.INTEGER,
+      allowNull: false,
+    },
+    accounts_total: {
       type: DataTypes.INTEGER,
       allowNull: false,
     },
@@ -80,10 +110,10 @@ DailyClosing.init(
       type: DataTypes.INTEGER,
       allowNull: false,
     },
-    status: {
-      type: DataTypes.ENUM(...enumKeys(StatusEnum)),
-      defaultValue: StatusEnum.Active,
-    },
+    // status: {
+    //   type: DataTypes.ENUM(...enumKeys(StatusEnum)),
+    //   defaultValue: StatusEnum.Active,
+    // },
     createdAt: {
       type: "TIMESTAMP",
       defaultValue: Sequelize.literal("CURRENT_TIMESTAMP"),
@@ -100,8 +130,8 @@ DailyClosing.init(
   {
     sequelize,
     timestamps: false,
-    tableName: "daily_closings",
+    tableName: "daily_ledger",
   }
 );
 
-DailyClosing.belongsTo(Loan, { foreignKey: "loan_id" });
+// LoanTaker.belongsTo(Loan, { foreignKey: 'loan_taker_id' });

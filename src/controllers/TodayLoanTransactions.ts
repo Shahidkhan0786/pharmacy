@@ -1,29 +1,67 @@
 import express from "express";
 // import { Loan } from "../models/Loan";
 import { Loan } from "../models/loan";
-import { DistributorLoan } from "../models/DistributorLoan";
-import { DistributorDebit } from "../models/DistributorDebit";
 import Joi from "joi";
 import { ValidationError } from "sequelize";
 const { Op } = require("sequelize");
 import { paging, enumKeys } from "../helpers/helper";
 import { LoanTaker } from "../models/loanTaker";
-import { Distributor } from "../models/distributor";
-import { DailyClosing as DC } from "../models/DailyClosing";
+import { LoanTransaction } from "../models/loanTransaction";
+import moment from "moment";
 
 const cloudinary = require("cloudinary").v2;
-
-export class DailyClosing {
-  private static instance: DailyClosing | null = null;
+export class TodayLoanTransactions {
+  private static instance: TodayLoanTransactions | null = null;
 
   private constructor() {}
 
-  static init(): DailyClosing {
+  static init(): TodayLoanTransactions {
     if (this.instance == null) {
-      this.instance = new DailyClosing();
+      this.instance = new TodayLoanTransactions();
     }
 
     return this.instance;
+  }
+  async todayCombinedData(req: express.Request, res: express.Response) {
+    try {
+      let todayDate: any;
+
+      if (req.query.date) {
+        // Parse and format the provided date string
+        todayDate = req.query.date;
+      } else {
+        // If no date is provided, default to today's date
+        todayDate = moment(new Date()).format("YYYY-MM-DD 00:00:00");
+      }
+
+      // Set the start and end of the day for the date
+      const startDate = moment(todayDate).startOf("day").toDate();
+
+      const where: any = {
+        createdAt: {
+          [Op.gte]: startDate,
+        },
+      };
+
+      const loanTakersData = await LoanTaker.findAll({
+        where: where,
+        include: [
+            {
+                model: Loan,
+                where: where,
+            },
+            {
+                model: LoanTransaction,
+                where: where,
+            },
+        ],
+      });
+
+      res.Success("Success", loanTakersData);
+    } catch (error) {
+      console.error(error);
+      res.status(500).json({ error: "Internal Server Error" });
+    }
   }
 
   async list(req: express.Request, res: express.Response) {
@@ -36,10 +74,10 @@ export class DailyClosing {
     }
 
     const where: any = {};
-    // where["distributor_id"] = req.query.id;
-    // if (qp.keyword) {
-    //   where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
-    // }
+
+    if (qp.keyword) {
+      where["name"] = { [Op.like]: "%" + qp.keyword + "%" };
+    }
 
     if (qp.status && qp.status != "" && qp.status != null) {
       where["status"] = {
@@ -47,29 +85,17 @@ export class DailyClosing {
       };
     }
 
-    // if (qp.loan_type && qp.loan_type != "" && qp.loan_type != null) {
-    //   where["loan_type"] = {
-    //     [Op.eq]: qp.loan_type,
-    //   };
-    // }
+    if (qp.loan_type && qp.loan_type != "" && qp.loan_type != null) {
+      where["loan_type"] = {
+        [Op.eq]: qp.loan_type,
+      };
+    }
 
     if (qp.date && qp.date != "" && qp.date != null) {
       where["date"] = {
         [Op.eq]: qp.date,
       };
     }
-
-    // if (qp.amount && qp.amount != "" && qp.amount != null) {
-    //   where["amount"] = {
-    //     [Op.eq]: qp.amount,
-    //   };
-    // }
-
-    // if (qp.bill_no && qp.bill_no != "" && qp.bill_no != null) {
-    //   where["bill_no"] = {
-    //     [Op.eq]: qp.bill_no,
-    //   };
-    // }
 
     let pagination = {};
 
@@ -80,8 +106,7 @@ export class DailyClosing {
       };
     }
 
-    const data = await DC.findAndCountAll({
-      include: { model: Loan },
+    const data = await Loan.findAndCountAll({
       where,
       order,
       distinct: true,
@@ -99,14 +124,15 @@ export class DailyClosing {
 
   public async save(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
-      closing_date: Joi.date().required(),
-      total_sales: Joi.number().required(),
-      previous_day_closing_sale: Joi.number().required(),
-      loan: Joi.number().required(),
-      loan_return: Joi.number().required(),
-      debited_amount: Joi.number().required(),
-      credited_amount: Joi.number().required(),
-      grand_total: Joi.number().required(),
+      loan_taker_id: Joi.number().required(),
+      loan_type: Joi.string().required().valid("cash", "items"),
+      amount: Joi.number().required().integer().min(1),
+      bill_no: Joi.number().optional().integer(),
+      description: Joi.string().optional(),
+      return_date: Joi.optional(),
+      installment_count: Joi.optional(),
+      installment_amount: Joi.optional(),
+      date: Joi.string().required(),
       status: Joi.required(),
     });
 
@@ -114,25 +140,49 @@ export class DailyClosing {
     if (error instanceof ValidationError) {
       return res.Error(error.details[0].message);
     }
-    console.log(req.body.date);
+
     const catData = {
-      closing_date: req.body.closing_date,
-      total_sales: req.body.total_sales,
-      description: req.body.description,
-      previous_day_closing_sale: req.body.previous_day_closing_sale,
-      loan: req.body.loan,
-      loan_return: req.body.loan_return, // Make bill_no optional using conditional assignment
-      debited_amount: req.body.debited_amount,
-      credited_amount: req.body.credited_amount,
-      grand_total: req.body.grand_total,
+      loan_taker_id: req.body.loan_taker_id,
+      loan_type: req.body.loan_type,
+      amount: req.body.amount,
+      description: req.body.description ?? null,
+      installment_amount: req.body.installment_amount ?? 0,
+      installment_count: req.body.installment_count ?? 0,
+      return_date: req.body.return_date ?? null,
+      bill_no: req.body.bill_no ?? null, // Make bill_no optional using conditional assignment
+      date: req.body.date,
       status: req.body.status,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
-    // const distributorId = Number(req.body.distributor_id);
-    // const additionalAmount = req.body.amount;
+    const loanTakerId = Number(req.body.loan_taker_id);
+    const additionalAmount = req.body.amount;
     try {
-      const instance = await DC.create(catData);
+      const instance = await Loan.create(catData);
+      const loanTaker = await LoanTaker.findOne({
+        where: { id: loanTakerId },
+      });
+
+      if (loanTaker) {
+        let currentLoanAmount = loanTaker.loan_amount;
+        let remainingLoanAmount = loanTaker.remaining_amount;
+
+        currentLoanAmount += additionalAmount;
+
+        // Calculate the remaining loan amount after the update
+        remainingLoanAmount = remainingLoanAmount + additionalAmount;
+
+        // Update the loan amount in the database
+        await LoanTaker.update(
+          {
+            loan_amount: currentLoanAmount,
+            remaining_amount: remainingLoanAmount,
+          },
+          { where: { id: loanTakerId } }
+        );
+      } else {
+        return res.Error("Pass Correct Loan Taker id");
+      }
 
       return res.Success("Added Successfully", instance);
     } catch (e: any) {
@@ -145,12 +195,11 @@ export class DailyClosing {
   public async update(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
       id: Joi.number().required(),
-      distributor_id: Joi.number().required(),
-      // loan_type: Joi.string().optional().valid("cash", "items"),
+      loan_taker_id: Joi.number().required(),
+      loan_type: Joi.string().optional().valid("cash", "items"),
       amount: Joi.number().optional().integer().min(1),
       bill_no: Joi.number().optional().integer(),
       description: Joi.string().optional(),
-      payment_source: Joi.optional(),
       status: Joi.optional(),
       return_date: Joi.optional(),
       installment_count: Joi.optional(),
@@ -163,33 +212,33 @@ export class DailyClosing {
       return;
     }
 
-    const debit: any = await Loan.findByPk(req.body.id);
+    const Loanr: any = await Loan.findByPk(req.body.id);
 
-    if (!debit) {
+    if (!Loanr) {
       res.Error("No Record Found");
       return;
     }
 
-    const debitData = {
-      distributor_id: req.body.distributor_id,
+    const LoanData = {
+      loan_taker_id: req.body.loan_taker_id,
+      loan_type: req.body.loan_type,
       amount: req.body.amount,
       description: req.body.description ?? null,
       bill_no: req.body.bill_no ?? null, // Make bill_no optional using conditional assignment
       status: req.body.status,
-      payment_source: req.body.payment_source ?? "",
       updatedAt: new Date(),
       return_date: req.body.return_date ?? null,
       installment_count: req.body.installment_count ?? 0,
       installment_amount: req.body.installment_amount ?? 0,
     };
     try {
-      const instance = await DistributorDebit.update(debitData, {
+      const instance = await Loan.update(LoanData, {
         where: { id: req.body.id },
       });
       if (!instance) {
         return res.Error("Error in updating record please fill correct data");
       }
-      const res_data = await DistributorDebit.findByPk(req.body.id);
+      const res_data = await Loan.findByPk(req.body.id);
       return res.Success("updated successfully", res_data);
     } catch (e: any) {
       return res.Error("Error in updating record please fill correct data");
@@ -209,7 +258,7 @@ export class DailyClosing {
       return;
     }
 
-    const result = await DistributorDebit.findOne({
+    const result = await Loan.findOne({
       where: { id: Number(req.body.id) },
     });
     // console.log(review);
@@ -236,7 +285,7 @@ export class DailyClosing {
       return;
     }
 
-    const data: any = await DistributorDebit.update(
+    const data: any = await Loan.update(
       { status: req.body.status },
       { where: { id: req.body.id } }
     );
@@ -250,7 +299,7 @@ export class DailyClosing {
   // del user
   async del(req: express.Request, res: express.Response) {
     try {
-      let data = await DistributorDebit.destroy({
+      let data = await Loan.destroy({
         where: {
           id: Number(req.body.id),
         },

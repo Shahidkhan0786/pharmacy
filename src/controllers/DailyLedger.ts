@@ -9,18 +9,18 @@ const { Op } = require("sequelize");
 import { paging, enumKeys } from "../helpers/helper";
 import { LoanTaker } from "../models/loanTaker";
 import { Distributor } from "../models/distributor";
-import { DailyClosing as DC } from "../models/DailyClosing";
+import { DailyLedger as DL } from "../models/DailyLedger";
 
 const cloudinary = require("cloudinary").v2;
 
-export class DailyClosing {
-  private static instance: DailyClosing | null = null;
+export class DailyLedger {
+  private static instance: DailyLedger | null = null;
 
   private constructor() {}
 
-  static init(): DailyClosing {
+  static init(): DailyLedger {
     if (this.instance == null) {
-      this.instance = new DailyClosing();
+      this.instance = new DailyLedger();
     }
 
     return this.instance;
@@ -80,8 +80,7 @@ export class DailyClosing {
       };
     }
 
-    const data = await DC.findAndCountAll({
-      include: { model: Loan },
+    const data = await DL.findAndCountAll({
       where,
       order,
       distinct: true,
@@ -99,40 +98,54 @@ export class DailyClosing {
 
   public async save(req: express.Request, res: express.Response) {
     const schema = Joi.object().keys({
-      closing_date: Joi.date().required(),
-      total_sales: Joi.number().required(),
-      previous_day_closing_sale: Joi.number().required(),
-      loan: Joi.number().required(),
-      loan_return: Joi.number().required(),
-      debited_amount: Joi.number().required(),
-      credited_amount: Joi.number().required(),
+      ledger_date: Joi.required(),
+      rs_ten: Joi.number().required(),
+      rs_twenty: Joi.number().required(),
+      rs_fifty: Joi.number().required(),
+      rs_hundred: Joi.number().required(),
+      rs_5hundred: Joi.number().required(),
+      rs_thousand: Joi.number().required(),
+      rs_5thousand: Joi.number().required(),
+      coins: Joi.number().required(),
+      rs_total: Joi.number().required(),
+      jazz_cash: Joi.number().required(),
+      easy_pasa: Joi.number().required(),
+      bank: Joi.number().required(),
+      accounts_total: Joi.number().required(),
       grand_total: Joi.number().required(),
-      status: Joi.required(),
+      // status: Joi.required(),
     });
 
     const { error, value } = schema.validate(req.body);
     if (error instanceof ValidationError) {
       return res.Error(error.details[0].message);
     }
-    console.log(req.body.date);
+    console.log("dataREC", req.body);
     const catData = {
-      closing_date: req.body.closing_date,
-      total_sales: req.body.total_sales,
-      description: req.body.description,
-      previous_day_closing_sale: req.body.previous_day_closing_sale,
-      loan: req.body.loan,
-      loan_return: req.body.loan_return, // Make bill_no optional using conditional assignment
-      debited_amount: req.body.debited_amount,
-      credited_amount: req.body.credited_amount,
+      ledger_date: req.body.ledger_date,
+      rs_ten: req.body.rs_ten,
+      // description: req.body.description || "",
+      rs_twenty: req.body.rs_twenty,
+      rs_fifty: req.body.rs_fifty,
+      rs_hundred: req.body.rs_hundred,
+      rs_5hundred: req.body.rs_5hundred,
+      rs_thousand: req.body.rs_thousand,
+      rs_5thousand: req.body.rs_5thousand,
+      coins: req.body.coins,
+      rs_total: req.body.rs_total,
+      jazz_cash: req.body.jazz_cash,
+      easy_pasa: req.body.easy_pasa,
+      bank: req.body.easy_pasa,
+      accounts_total: req.body.bank,
       grand_total: req.body.grand_total,
-      status: req.body.status,
+      // status: req.body.status,
       createdAt: new Date(),
       updatedAt: new Date(),
     };
     // const distributorId = Number(req.body.distributor_id);
     // const additionalAmount = req.body.amount;
     try {
-      const instance = await DC.create(catData);
+      const instance = await DL.create(catData);
 
       return res.Success("Added Successfully", instance);
     } catch (e: any) {

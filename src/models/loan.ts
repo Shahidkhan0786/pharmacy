@@ -9,7 +9,11 @@ import {
 import { sequelize } from "../config/connection";
 import { StatusEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
-export class Loan extends Model<InferAttributes<Loan>, InferCreationAttributes<Loan>> {
+import { LoanTaker } from "./loanTaker";
+export class Loan extends Model<
+  InferAttributes<Loan>,
+  InferCreationAttributes<Loan>
+> {
   id: number | null;
   loan_taker_id: number;
   loan_type: string;
@@ -19,7 +23,7 @@ export class Loan extends Model<InferAttributes<Loan>, InferCreationAttributes<L
   date?: Date;
   return_date?: Date;
   installment_amount?: number;
-  installment_count?: number; 
+  installment_count?: number;
   status: StatusEnum;
   createdAt?: Date;
   updatedAt?: Date;
@@ -55,17 +59,17 @@ Loan.init(
     },
     installment_amount: {
       type: DataTypes.INTEGER,
-      defaultValue:0,
+      defaultValue: 0,
       allowNull: true,
     },
     installment_count: {
       type: DataTypes.INTEGER,
-      defaultValue:0,
+      defaultValue: 0,
       allowNull: true,
     },
     bill_no: {
       type: DataTypes.INTEGER,
-      allowNull:true,
+      allowNull: true,
     },
     description: {
       type: DataTypes.STRING(100),
@@ -93,3 +97,7 @@ Loan.init(
     tableName: "loans",
   }
 );
+
+// Loan.belongsTo(LoanTaker, {
+//   foreignKey: "loan_taker_id",
+// });

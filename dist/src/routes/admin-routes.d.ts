@@ -11,4 +11,6 @@ export declare class AdminRoutes extends RoutesConfig {
     distributorDebitRoutes(): void;
     distributorCreditRoutes(): void;
     dailyClosingRoutes(): void;
+    dailyLedgerRoutes(): void;
+    todayLoansTransactions(): void;
 }
