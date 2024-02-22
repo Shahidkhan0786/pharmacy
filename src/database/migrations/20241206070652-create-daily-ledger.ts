@@ -4,62 +4,70 @@ import { StatusEnum, PaymentSourceEnum } from "../../constants/enum";
 import { enumKeys } from "../../helpers/helper";
 module.exports = {
   up: (queryInterface: QueryInterface) => {
-    return queryInterface.createTable("daily_closings", {
+    return queryInterface.createTable("daily_ledger", {
       id: {
         type: DataTypes.BIGINT.UNSIGNED,
         primaryKey: true,
         autoIncrement: true,
       },
-      loan_id: {
-        type: DataTypes.BIGINT.UNSIGNED,
+      ledger_date: {
+        type: DataTypes.DATE,
         allowNull: false,
       },
-      closing_date: {
-        type: DataTypes.DATEONLY,
-        allowNull: false,
-      },
-      total_sales: {
+      rs_ten: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      // total_payments: {
-      //   type: DataTypes.INTEGER,
-      //   allowNull: false,
-      // },
-      // total_expenses: {
-      //   type: DataTypes.INTEGER,
-      //   allowNull: false,
-      // },
-      previous_day_closing_sale: {
+      rs_twenty: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      loan: {
+      rs_fifty: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      loan_return: {
+      rs_hundred: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      debited_amount: {
+      rs_5hundred: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
-      credited_amount: {
+      rs_thousand: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      rs_5thousand: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      coins: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      rs_total: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      jazz_cash: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      easy_pasa: {
+        type: DataTypes.INTEGER,
+      },
+      bank: {
+        type: DataTypes.INTEGER,
+        allowNull: false,
+      },
+      accounts_total: {
         type: DataTypes.INTEGER,
         allowNull: false,
       },
       grand_total: {
         type: DataTypes.INTEGER,
         allowNull: false,
-      },
-      description: {
-        type: DataTypes.STRING(100),
-      },
-      status: {
-        type: DataTypes.ENUM(...enumKeys(StatusEnum)),
-        defaultValue: StatusEnum.Active,
       },
       // Add other fields as needed
       createdAt: {

@@ -2,11 +2,13 @@ import express, { RequestHandler, Router } from "express";
 import { RoutesConfig } from "./routes.config";
 import { AdminAuthMiddleware } from "../middlewares/admin-auth-middleware";
 import {
+  DailyLedger,
+  DailyClosing,
   LoanController,
-  DistributorController,
   LoanTakerController,
+  TodayLoanTransactions,
+  DistributorController,
   LoanTransactionController,
-  // DistributorLoanController,
   DistributorDebitController,
   DistributorCreditController,
 } from "../controllers/controller";
@@ -28,13 +30,15 @@ export class AdminRoutes extends RoutesConfig {
       new AdminAuthMiddleware(this.app).handle,
       this.route
     );
-    // this.categoryRoutes()
-    this.distributorRoutes();
-    this.loanTakerRoutes();
     this.loanRoutes();
+    this.loanTakerRoutes();
+    this.dailyLedgerRoutes();
+    this.distributorRoutes();
+    this.dailyClosingRoutes();
     this.loanTransactionRoutes();
     this.distributorDebitRoutes();
     this.distributorCreditRoutes();
+    this.todayLoansTransactions();
     return this.app;
   }
 
@@ -111,5 +115,42 @@ export class AdminRoutes extends RoutesConfig {
     route.post("/update-status", controller.updateStatus);
     route.post("/delete", controller.del);
     this.route.use("/distributor-credit", route);
+  }
+
+  dailyClosingRoutes() {
+    const route = express.Router();
+    const controller = DailyClosing.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/daily-closing", route);
+  }
+
+  dailyLedgerRoutes() {
+    const route = express.Router();
+    const controller = DailyLedger.init();
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/ledger", route);
+  }
+
+  todayLoansTransactions() {
+    const route = express.Router();
+    const controller = TodayLoanTransactions.init();
+    route.get("/loan-history", controller.todayCombinedData);
+    route.get("/list", controller.list);
+    route.post("/detail", controller.detail);
+    route.post("/add", controller.save);
+    route.post("/update", controller.update);
+    route.post("/update-status", controller.updateStatus);
+    route.post("/delete", controller.del);
+    this.route.use("/today", route);
   }
 }

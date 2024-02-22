@@ -10,6 +10,7 @@ import { sequelize } from "../config/connection";
 import { StatusEnum } from "../constants/enum";
 import { enumKeys } from "../helpers/helper";
 import { Loan } from "./loan";
+import { LoanTransaction } from "./loanTransaction";
 export class LoanTaker extends Model<
   InferAttributes<LoanTaker>,
   InferCreationAttributes<LoanTaker>
@@ -87,5 +88,12 @@ LoanTaker.init(
     tableName: "loan_takers",
   }
 );
+
+LoanTaker.hasOne(LoanTransaction, {
+  foreignKey: "loan_taker_id",
+});
+LoanTaker.hasOne(Loan, {
+  foreignKey: "loan_taker_id",
+});
 
 // LoanTaker.belongsTo(Loan, { foreignKey: 'loan_taker_id' });
